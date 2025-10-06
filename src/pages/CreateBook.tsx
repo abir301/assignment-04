@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../redux/hooks'
-import { selectPosting } from '../redux/booksSlice'
-import { postBook } from '../redux/booksSlice'
+import { selectPosting, postBook } from '../redux/booksSlice'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -55,6 +54,7 @@ export default function CreateBook() {
       copies: Number(copies) || 0,
       description: trimmedDescription,
       bookCover: trimmedBookCover,
+      availability: true,
     };
 
     try {
