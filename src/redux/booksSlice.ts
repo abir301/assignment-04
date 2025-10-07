@@ -62,7 +62,7 @@ type UpdateBookArgs = {
 export const updateBook = createAsyncThunk(
   'books/updateBook',
   async ({ id, book }: UpdateBookArgs) => {
-    const res = await fetch(`http://localhost:5000/books/${id}` , {
+    const res = await fetch(`http://localhost:5000/all-books/${id}` , {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(book),

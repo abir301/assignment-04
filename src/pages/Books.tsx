@@ -21,6 +21,10 @@ function Books() {
     bookCover: '',
   });
 
+  const [borrowingBook, setBorrowingBook] = useState<any>(null);
+  const [borrowQty, setBorrowQty] = useState<string>('');
+  const [borrowDueDate, setBorrowDueDate] = useState<string>('');
+
   useEffect(() => {
     dispatch(fetchBooks());
   }, [dispatch]);
@@ -40,6 +44,62 @@ function Books() {
 
   const handleDelete = (bookId: number) => {
     console.log('Delete book:', bookId);
+  };
+
+  const openBorrow = (book: any) => {
+    const hasId = (book as any)?._id;
+    if (!book.availability || Number(book.copies) === 0 || !hasId) {
+      toast.error('This book is unavailable');
+      return;
+    }
+    setBorrowingBook(book);
+    setBorrowQty('');
+    setBorrowDueDate('');
+  };
+
+  const cancelBorrow = () => {
+    setBorrowingBook(null);
+    setBorrowQty('');
+    setBorrowDueDate('');
+  };
+
+  const submitBorrow = async () => {
+    if (!borrowingBook?._id) {
+      toast.error('Invalid book id');
+      return;
+    }
+    const qtyNum = Number(borrowQty);
+    if (!qtyNum || qtyNum < 1) {
+      toast.error('Quantity must be at least 1');
+      return;
+    }
+    if (qtyNum > Number(borrowingBook.copies || 0)) {
+      toast.error('Quantity exceeds available copies');
+      return;
+    }
+    try {
+      const res = await fetch('http://localhost:5000/borrows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookId: borrowingBook._id,
+          quantity: qtyNum,
+          dueDate: borrowDueDate || null,
+        }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Failed to borrow');
+      }
+      await res.json();
+      toast.success('Borrowed successfully');
+      setBorrowingBook(null);
+      setBorrowQty('');
+      setBorrowDueDate('');
+      dispatch(fetchBooks());
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to borrow');
+    }
   };
 
   const handleEditSubmit = async () => {
@@ -138,6 +198,74 @@ function Books() {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Books Management</h1>
+
+      {borrowingBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={cancelBorrow} />
+          <div className="relative z-10 w-full max-w-md mx-4 rounded-lg bg-white p-6 shadow-lg">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800">Borrow Book</h2>
+              <button
+                type="button"
+                className="h-8 w-8 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                onClick={cancelBorrow}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-gray-600">{borrowingBook.title}</div>
+                <div className="text-xs text-gray-500">Available copies: {borrowingBook.copies}</div>
+              </div>
+
+              <div>
+                <label htmlFor="borrow-qty" className="mb-2 block text-sm font-medium text-gray-900">Quantity</label>
+                <input
+                  id="borrow-qty"
+                  type="number"
+                  min={1}
+                  max={Number(borrowingBook.copies) || 0}
+                  placeholder="1"
+                  className="w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-gray-900 outline-none [appearance:textfield] focus:border-gray-500 focus:ring-4 focus:ring-blue-100 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={borrowQty}
+                  onChange={(e) => setBorrowQty(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="borrow-due" className="mb-2 block text-sm font-medium text-gray-900">Due Date</label>
+                <input
+                  id="borrow-due"
+                  type="date"
+                  className="w-full rounded-xl border border-blue-200 bg-white px-4 py-3 text-gray-900 outline-none focus:border-gray-500 focus:ring-4 focus:ring-blue-100"
+                  value={borrowDueDate}
+                  onChange={(e) => setBorrowDueDate(e.target.value)}
+                />
+              </div>
+
+              <div className="flex space-x-4 pt-2">
+                <button
+                  type="button"
+                  className="flex-1 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200"
+                  onClick={submitBorrow}
+                >
+                  Confirm Borrow
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 rounded-xl bg-gray-300 px-5 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-200"
+                  onClick={cancelBorrow}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {editingBook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -337,6 +465,12 @@ function Books() {
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
                     >
                       Edit
+                    </button>
+                    <button
+                      onClick={() => openBorrow(book)}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                    >
+                      Borrow
                     </button>
                     <button
                       onClick={() => handleDelete(book.isbn)}
