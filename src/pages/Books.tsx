@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { fetchBooks, selectBooks, selectLoading, selectError, updateBook } from '../redux/booksSlice';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Books() {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const books = useAppSelector(selectBooks);
   const loading = useAppSelector(selectLoading);
@@ -48,7 +50,7 @@ function Books() {
 
   const openBorrow = (book: any) => {
     const hasId = (book as any)?._id;
-    if (!book.availability || Number(book.copies) === 0 || !hasId) {
+    if (Number(book.copies) < 1 || !hasId) {
       toast.error('This book is unavailable');
       return;
     }
@@ -146,7 +148,7 @@ function Books() {
       copies: Number(editForm.copies) || 0,
       description: trimmedDescription,
       bookCover: trimmedBookCover,
-      availability: editingBook.availability,
+      availability: (Number(editForm.copies) || 0) >= 1,
     };
 
     try {
@@ -175,7 +177,7 @@ function Books() {
 
   if (loading) {
     return (
-      <div className="p-8">
+      <div className="p-8 h-screen">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Books Management</h1>
         <div className="flex justify-center items-center h-64">
           <div className="text-lg text-gray-600">Loading books...</div>
@@ -196,7 +198,7 @@ function Books() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 h-screen">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Books Management</h1>
 
       {borrowingBook && (
@@ -451,11 +453,11 @@ function Books() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    book.availability
+                    Number(book.copies) >= 1
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {book.availability ? 'Available' : 'Unavailable'}
+                    {Number(book.copies) >= 1 ? 'Available' : 'Unavailable'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -465,6 +467,16 @@ function Books() {
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
                     >
                       Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        const id = (book as any)?._id ?? (book as any)?.id ?? book?.isbn;
+                        if (!id) return;
+                        navigate(`/book/${id}`);
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                    >
+                      Details
                     </button>
                     <button
                       onClick={() => openBorrow(book)}
