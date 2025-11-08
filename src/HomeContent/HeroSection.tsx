@@ -14,10 +14,10 @@ function HeroSection() {
           Search the shelves, pick your next story, and start reading today.
         </p>
         <Link 
-          to="/books" 
+          to="/create-book" 
           className="inline-block bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 px-8 rounded-lg transition-colors duration-300 text-lg"
         >
-          Browse Books
+          Add Books
         </Link>
       </div>
     </div>

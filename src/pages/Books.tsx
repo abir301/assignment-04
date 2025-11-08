@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { fetchBooks, selectBooks, selectLoading, selectError, updateBook } from '../redux/booksSlice';
+import { fetchBooks, selectBooks, selectLoading, selectError, updateBook, deleteBook } from '../redux/booksSlice';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -26,6 +26,7 @@ function Books() {
   const [borrowingBook, setBorrowingBook] = useState<any>(null);
   const [borrowQty, setBorrowQty] = useState<string>('');
   const [borrowDueDate, setBorrowDueDate] = useState<string>('');
+  const [deletingBook, setDeletingBook] = useState<any>(null);
 
   useEffect(() => {
     dispatch(fetchBooks());
@@ -44,8 +45,31 @@ function Books() {
     });
   };
 
-  const handleDelete = (bookId: number) => {
-    console.log('Delete book:', bookId);
+  const handleDelete = (book: any) => {
+    setDeletingBook(book);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingBook) return;
+    
+    const bookId = (deletingBook as any)?._id ?? (deletingBook as any)?.id ?? deletingBook?.isbn;
+    if (!bookId) {
+      toast.error('Invalid book id');
+      return;
+    }
+
+    try {
+      await dispatch(deleteBook(bookId)).unwrap();
+      toast.success('Book deleted successfully');
+      setDeletingBook(null);
+      dispatch(fetchBooks());
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete book');
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeletingBook(null);
   };
 
   const openBorrow = (book: any) => {
@@ -80,19 +104,29 @@ function Books() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/borrows', {
+      const res = await fetch('https://assignment-04-backend.vercel.app/borrows', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           bookId: borrowingBook._id,
+          title: borrowingBook.title,
+          isbn: borrowingBook.isbn,
           quantity: qtyNum,
           dueDate: borrowDueDate || null,
         }),
+
       });
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || 'Failed to borrow');
       }
+
+      await fetch(`https://assignment-04-backend.vercel.app/all-books/${borrowingBook._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ copies: qtyNum }),
+      });
+
       await res.json();
       toast.success('Borrowed successfully');
       setBorrowingBook(null);
@@ -198,7 +232,7 @@ function Books() {
   }
 
   return (
-    <div className="p-8 h-screen">
+    <div className="p-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Books Management</h1>
 
       {borrowingBook && (
@@ -406,6 +440,51 @@ function Books() {
         </div>
       )}
 
+      {deletingBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={cancelDelete} />
+          <div className="relative z-10 w-full max-w-md mx-4 rounded-lg bg-white p-6 shadow-lg">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800">Delete Book</h2>
+              <button
+                type="button"
+                className="h-8 w-8 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                onClick={cancelDelete}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-gray-700 mb-2">
+                  Are you sure you want to delete this book?
+                </p>
+
+              </div>
+
+              <div className="flex space-x-4 pt-2">
+                <button
+                  type="button"
+                  className="flex-1 rounded-lg bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200"
+                  onClick={confirmDelete}
+                >
+                  Delete
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 rounded-lg bg-gray-300 px-5 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-200"
+                  onClick={cancelDelete}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -452,11 +531,10 @@ function Books() {
                   <div className="text-sm text-gray-900">{book.copies}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    Number(book.copies) >= 1
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${Number(book.copies) >= 1
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
-                  }`}>
+                    }`}>
                     {Number(book.copies) >= 1 ? 'Available' : 'Unavailable'}
                   </span>
                 </td>
@@ -485,7 +563,7 @@ function Books() {
                       Borrow
                     </button>
                     <button
-                      onClick={() => handleDelete(book.isbn)}
+                      onClick={() => handleDelete(book)}
                       className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
                     >
                       Delete

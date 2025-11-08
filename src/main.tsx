@@ -9,7 +9,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import BooksList from './pages/Books';
 import CreateBook from './pages/CreateBook';
 import BookDetail from './pages/BookDetail';
-import EditBook from './pages/EditBook';
 import BorrowBook from './pages/BorrowDetails';
 import BorrowSummary from './pages/BorrowSummary';
 import Home from './Home';
@@ -39,10 +38,6 @@ const router = createBrowserRouter([
       {
         path: "/book/:id",
         element: <BookDetail />,
-      },
-      {
-        path: "/edit-book/:id",
-        element: <EditBook />,
       },
       {
         path: "/borrow/:bookId",
