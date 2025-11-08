@@ -252,9 +252,9 @@ function Books() {
             </div>
 
             <div className="space-y-4">
-              <div>
+              <div className='flex items-center justify-between'>
                 <div className="text-sm text-gray-600">{borrowingBook.title}</div>
-                <div className="text-xs text-gray-500">Available copies: {borrowingBook.copies}</div>
+                <div className="text-sm text-gray-500">Available copies: {borrowingBook.copies}</div>
               </div>
 
               <div>

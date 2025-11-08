@@ -66,6 +66,13 @@ function BookDetail() {
         const text = await res.text();
         throw new Error(text || 'Failed to borrow');
       }
+
+      await fetch(`https://assignment-04-backend.vercel.app/all-books/${bookId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ copies: qtyNum }),
+      });
+
       await res.json();
       toast.success('Borrowed successfully');
       setShowBorrowModal(false);

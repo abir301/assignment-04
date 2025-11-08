@@ -1,73 +1,43 @@
-# React + TypeScript + Vite
+### Project Name: Library Management
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### Project Link: https://assignment-04-ts.netlify.app/
 
-Currently, two official plugins are available:
+### Tech Stacks:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. React
 
-## React Compiler
+2. TypeScript
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+3. Tailwind.CSS
 
-## Expanding the ESLint configuration
+4. Redux 
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+5. Nodejs
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+6. Mongodb
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Functionality:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+A Simple library management web application to add , update and delete books using technologies like react typescript and redux
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Project Features:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Book management with all CRUD operations where we can:
+
+   - Upload books
+   - Get books
+   - Get a single book details
+   - Borrow books
+   - Can check the summary of the borrowed books
+   - Update books and
+   - Delete books.
+
+### How to Start the Project:
+
+1. Clone the project from: https://github.com/abir301/assignment-04
+
+2. Run: npm i / npm install
+
+3. Run: npm run dev / npm start to start the project.
+
